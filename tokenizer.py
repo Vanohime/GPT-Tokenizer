@@ -1,31 +1,39 @@
+import regex as re
 
-def get_stats(ids):
+def get_stats(ids: [list[list[int]]]):
     res = {}
-    for pair in zip(ids, ids[1:]):
-        res[pair] = res.get(pair, 0) + 1
+    for lst in ids:
+        for pair in zip(lst, lst[1:]):
+            res[pair] = res.get(pair, 0) + 1
     return res
 
-def merge(ids, pair, ind):
+def merge(ids: list[list[int]], pair, ind: int):
     newids = []
-    i = 0
-    while i < len(ids):
-        if i < len(ids) - 1 and pair[0] == ids[i] and pair[1] == ids[i+1]:
-            newids.append(ind)
-            i += 2
-        else:
-            newids.append(ids[i])
-            i += 1
+    for lst in ids:
+        newlst = []
+        i = 0
+        while i < len(lst):
+            if i < len(lst) - 1 and pair[0] == lst[i] and pair[1] == lst[i+1]:
+                newlst.append(ind)
+                i += 2
+            else:
+                newlst.append(lst[i])
+                i += 1
+
+        newids.append(newlst)
     return newids
 
 
-
-class BasicTokenizer:
+class RegexTokenizer:
     def __init__(self):
         self.merges = {}
         self.vocab = {}
+        self.pattern  = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
 
     def train(self, text, vocab_size, verbose=False):
-        tokens = list(map(int, text.encode("utf-8")))
+        splitted_text: list[str] = re.findall(self.pattern, text)
+        tokens: list[list[int]] = [list(map(int, word.encode("utf-8"))) for word in splitted_text]
+        i = 0
         num_merges = vocab_size - 256
         for i in range(num_merges):
             stats = get_stats(tokens)
@@ -44,26 +52,18 @@ class BasicTokenizer:
     def encode(self, text):
         ids = list(map(int, text.encode("utf-8")))
         while len(ids) >=2:
-            stats = get_stats(ids)
+            stats = get_stats([ids])
             pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
             if pair not in self.merges:
                 break
             ind = self.merges[pair]
-            ids = merge(ids, pair, ind)
-        return ids
+            ids = merge([ids], pair, ind)
+        return ids[0]
 
 
     def decode(self, ids):
-        tokens = b"".join(self.vocab[idx] for idx in ids)
+        tokens = b"".join(self.vocab[idx] for idx in [lst for lst in ids])
         text = tokens.decode("utf-8", errors="replace")
         return text
 
-
-tok = BasicTokenizer()
-text = open("taylorswift.txt", 'r').read()
-print(len(list(set(text))))
-vocab_size = 30 + 256
-tok.train(text, vocab_size)
-test = "09 premiere of Hannah Montana: The Movie. She had a cameo appearance in the film and wrote two songs for its soundtrack.[71][72]Swift's second studio album, Fearless, was"
-print(tok.decode(tok.encode(test)) == test)
 
