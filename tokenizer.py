@@ -64,12 +64,3 @@ class RegexTokenizer:
         tokens = b"".join(self.vocab[idx] for idx in ids)
         text = tokens.decode("utf-8", errors="replace")
         return text
-
-
-tok = RegexTokenizer()
-text = open("taylorswift.txt", 'r').read()
-print(len(list(set(text))))
-vocab_size = 30 + 256
-tok.train(text, vocab_size)
-test = "09 premiere of Hannah Montana: The Movie. She had a cameo appearance in the film and wrote two songs for its soundtrack.[71][72]Swift's second studio album, Fearless, was"
-print(tok.decode(tok.encode(test)) == test)
