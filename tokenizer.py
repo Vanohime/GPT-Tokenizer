@@ -27,7 +27,7 @@ class RegexTokenizer:
         self.merges = {}
         self.vocab = {}
         self.pattern = GPT4_SPLIT_PATTERN
-    def train(self, text, vocab_size, verbose=False):
+    def train(self, text, vocab_size):
         splitted_text: list[str] = re.findall(self.pattern, text)
         tokens: list[list[int]] = [list(map(int, word.encode("utf-8"))) for word in splitted_text]
         i = 0
