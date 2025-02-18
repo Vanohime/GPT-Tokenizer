@@ -27,7 +27,8 @@ class RegexTokenizer:
         self.merges = {}
         self.vocab = {}
         self.pattern = GPT4_SPLIT_PATTERN
-    def train(self, text, vocab_size):
+        
+    def train(self, text, vocab_size, savelogs=False):
         splitted_text: list[str] = re.findall(self.pattern, text)
         tokens: list[list[int]] = [list(map(int, word.encode("utf-8"))) for word in splitted_text]
         i = 0
@@ -40,7 +41,8 @@ class RegexTokenizer:
             self.merges[pair_to_merge] = 256 + i
             for j in range(len(tokens)):
                 tokens[j] = merge(tokens[j], pair_to_merge, 256 + i)
-            print(f"merged pair {pair_to_merge} to token {256 + i}")
+            if savelogs:
+                print(f"merged pair {pair_to_merge} to token {256 + i}")
         self.create_vocab()
 
     def create_vocab(self):
@@ -72,4 +74,3 @@ class RegexTokenizer:
         tokens = b"".join(self.vocab[idx] for idx in ids)
         text = tokens.decode("utf-8", errors="replace")
         return text
-
