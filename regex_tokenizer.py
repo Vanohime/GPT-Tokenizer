@@ -63,7 +63,7 @@ class RegexTokenizer:
 
     def encode(self, text):
         splitted_text = re.findall(self.pattern, text)
-        int_chunks: list[list[int]] = [list(map(int, word.encode("utf-8"))) for word in splitted_text]
+        int_chunks = [list(map(int, word.encode("utf-8"))) for word in splitted_text]
         ids = []
         for chunk in int_chunks:
             encoded_chunk = self._encode_chunk(chunk)
